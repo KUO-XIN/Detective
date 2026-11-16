@@ -1,0 +1,1403 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDNIGHT CASE｜偵探調查系統</title>
+
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: "Noto Sans TC",Arial,sans-serif;
+            background: #17191e;
+            color: #e8e8e8
+        }
+
+        button {
+            cursor: pointer;
+            font: inherit
+        }
+
+            button:hover {
+                filter: brightness(1.2)
+            }
+
+            button:disabled {
+                opacity: .5;
+                cursor: not-allowed
+            }
+
+        header {
+            height: 65px;
+            background: #20232a;
+            border-bottom: 1px solid #383b43;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px
+        }
+
+        .logo {
+            font-size: 19px;
+            font-weight: bold;
+            letter-spacing: 2px
+        }
+
+        .header-info {
+            color: #aaa;
+            font-size: 13px
+        }
+
+        .page {
+            display: none;
+            max-width: 1250px;
+            margin: auto;
+            padding: 35px 24px
+        }
+
+            .page.active {
+                display: block
+            }
+
+        .panel {
+            background: #22252d;
+            border: 1px solid #393d47;
+            border-radius: 9px;
+            padding: 22px
+        }
+
+        .muted {
+            color: #999;
+            font-size: 14px;
+            line-height: 1.8
+        }
+
+        h1, h2, h3 {
+            margin-top: 0
+        }
+
+        h1 {
+            font-size: 30px;
+            letter-spacing: 2px
+        }
+
+        h2 {
+            font-size: 19px
+        }
+
+        .btn {
+            border: 1px solid #555b68;
+            background: #343945;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 5px
+        }
+
+        .btn-primary {
+            background: #a17b4d;
+            border-color: #a17b4d
+        }
+
+        .btn-danger {
+            background: #754343;
+            border-color: #754343
+        }
+
+        .home-content {
+            max-width: 760px;
+            margin: 50px auto;
+            text-align: center
+        }
+
+            .home-content .panel {
+                text-align: left;
+                margin: 25px 0
+            }
+
+        .case-container {
+            max-width: 1050px;
+            margin: 55px auto
+        }
+
+        .case-heading {
+            margin-bottom: 35px
+        }
+
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 20px
+        }
+
+        .case-card {
+            background: #22252d;
+            border: 1px solid #393d47;
+            border-radius: 9px;
+            padding: 25px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: .2s
+        }
+
+            .case-card.available {
+                border-color: #756044
+            }
+
+                .case-card.available:hover {
+                    border-color: #c29a65;
+                    transform: translateY(-3px)
+                }
+
+        .case-number {
+            color: #c29a65;
+            font-size: 13px;
+            letter-spacing: 2px;
+            margin-bottom: 12px
+        }
+
+        .case-card h2 {
+            font-size: 21px;
+            margin-bottom: 12px
+        }
+
+        .case-card p {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.8
+        }
+
+        .case-status {
+            font-size: 12px;
+            margin-bottom: 15px;
+            color: #aaa
+        }
+
+            .case-status.ready {
+                color: #a9c69b
+            }
+
+        .case-footer {
+            margin-top: 35px;
+            text-align: center
+        }
+
+        .case-divider {
+            border: 0;
+            border-top: 1px solid #414550;
+            margin: 25px 0
+        }
+
+        .game-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 220px minmax(0,1fr) 260px;
+            gap: 16px;
+            align-items: start
+        }
+
+        .suspect-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .suspect {
+            display: block;
+            text-align: left;
+            background: #292d36;
+            border: 1px solid #414550;
+            color: white;
+            border-radius: 6px;
+            padding: 15px;
+            width: 100%
+        }
+
+            .suspect.selected {
+                border-color: #c29a65;
+                background: #39332b
+            }
+
+            .suspect small {
+                display: block;
+                color: #aaa;
+                margin-top: 6px
+            }
+
+        .chat-panel {
+            min-height: 590px;
+            display: flex;
+            flex-direction: column
+        }
+
+        .chat-title {
+            border-bottom: 1px solid #414550;
+            padding-bottom: 15px
+        }
+
+        .chat-messages {
+            flex: 1;
+            min-height: 300px;
+            max-height: 390px;
+            overflow-y: auto;
+            padding: 15px 0
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 13px;
+            line-height: 1.7;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere
+        }
+
+            .message.ai {
+                background: #343944
+            }
+
+            .message.player {
+                background: #66543e;
+                margin-left: auto
+            }
+
+        .chat-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px
+        }
+
+        input {
+            min-width: 0;
+            flex: 1;
+            background: #17191e;
+            color: white;
+            border: 1px solid #50545f;
+            padding: 12px;
+            border-radius: 5px
+        }
+
+        .question-count {
+            color: #d4b17f;
+            font-size: 13px;
+            margin-top: 12px
+        }
+
+        .tool-button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: #292d36;
+            border: 1px solid #414550;
+            color: #ddd;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 8px
+        }
+
+            .tool-button.active {
+                border-color: #c29a65
+            }
+
+        .content-area {
+            margin-top: 18px;
+            min-height: 160px
+        }
+
+        .evidence-item {
+            border-bottom: 1px solid #414550;
+            padding: 14px 0
+        }
+
+            .evidence-item:last-child {
+                border: none
+            }
+
+            .evidence-item p {
+                color: #aaa;
+                font-size: 13px;
+                line-height: 1.7
+            }
+
+        .evidence-ask {
+            margin-top: 5px;
+            padding: 6px 10px;
+            font-size: 12px
+        }
+
+        .answer-list {
+            display: grid;
+            gap: 12px;
+            margin: 25px 0
+        }
+
+        .answer-option {
+            padding: 15px;
+            border: 1px solid #50545f;
+            background: #292d36;
+            color: white;
+            border-radius: 6px;
+            text-align: left
+        }
+
+            .answer-option.selected {
+                border-color: #c29a65;
+                background: #39332b
+            }
+
+        #endingResult {
+            line-height: 2;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere
+        }
+
+        .truth-section {
+            margin-top: 22px;
+            border-top: 1px solid #414550;
+            padding-top: 18px
+        }
+
+            .truth-section h3 {
+                color: #d4b17f;
+                margin-bottom: 8px
+            }
+
+            .truth-section p {
+                color: #ccc;
+                line-height: 1.8;
+                white-space: pre-wrap
+            }
+
+        .status-message {
+            color: #d4b17f;
+            font-size: 13px;
+            margin-top: 10px;
+            min-height: 20px
+        }
+
+        .preset-area {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            margin: 10px 0
+        }
+
+            .preset-area .btn {
+                font-size: 13px;
+                padding: 8px 10px
+            }
+
+        .statement {
+            background: #292d36;
+            border-left: 3px solid #a17b4d;
+            padding: 12px;
+            margin: 10px 0;
+            color: #ccc;
+            line-height: 1.8
+        }
+
+        @media(max-width:850px) {
+            .game-layout {
+                grid-template-columns: 1fr
+            }
+
+            .suspect-list {
+                display: grid;
+                grid-template-columns: repeat(3,1fr)
+            }
+
+            .suspect {
+                font-size: 13px;
+                padding: 10px
+            }
+
+            .chat-panel {
+                min-height: 480px
+            }
+
+            header {
+                padding: 0 15px
+            }
+
+            .page {
+                padding: 20px 12px
+            }
+        }
+
+        @media(max-width:650px) {
+            .case-grid {
+                grid-template-columns: 1fr
+            }
+
+            .case-container {
+                margin: 25px auto
+            }
+
+            .home-content {
+                margin: 25px auto
+            }
+
+                .home-content h1 {
+                    font-size: 28px
+                }
+
+            .suspect-list {
+                grid-template-columns: repeat(2,1fr)
+            }
+
+            .chat-input {
+                flex-direction: column
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">MIDNIGHT CASE</div>
+        <div class="header-info">偵探調查系統</div>
+    </header>
+
+    <!-- 案件選擇 -->
+    <section id="homePage" class="page active">
+        <div class="case-container">
+            <div class="case-heading">
+                <div class="muted">DETECTIVE MYSTERY GAME</div>
+                <h1>案件檔案室</h1>
+                <p class="muted">選擇一宗案件開始調查。每個案件都有獨立的故事、人物與線索。</p>
+            </div>
+
+            <div class="case-grid">
+                <div class="case-card available">
+                    <div>
+                        <div class="case-number">CASE 001</div>
+                        <h2>午夜書房的最後訪客</h2>
+                        <p>企業負責人於私人宅邸的書房內被發現死亡。三位與死者關係密切的人物，各自隱藏著不願公開的秘密。</p>
+                    </div>
+                    <div>
+                        <div class="case-status ready">● 已開放調查</div>
+                        <button class="btn btn-primary" onclick="openCase('case01')">查看案件</button>
+                    </div>
+                </div>
+
+                <div class="case-card available">
+                    <div>
+                        <div class="case-number">CASE 002</div>
+                        <h2>沉默的病房</h2>
+                        <p>一名出生不久的男嬰在病房內死亡。喉部傷痕、藥物殘留，以及案發當日的爭吵聲，都讓這起事件變得更加複雜。</p>
+                    </div>
+                    <div>
+                        <div class="case-status ready">● 已開放調查</div>
+                        <button class="btn btn-primary" onclick="openCase('case02')">查看案件</button>
+                    </div>
+                </div>
+            </div>
+            <div class="case-footer muted">MIDNIGHT CASE INVESTIGATION SYSTEM</div>
+            <div id="homeStatus" class="status-message"></div>
+        </div>
+    </section>
+
+    <!-- 案件介紹 -->
+    <section id="caseInfoPage" class="page">
+        <div class="home-content">
+            <div class="muted" id="caseInfoNumber">CASE INFORMATION</div>
+            <div class="panel">
+                <div class="case-number">MIDNIGHT CASE</div>
+                <h1 id="caseInfoTitle"></h1>
+                <p class="muted" id="caseInfoDescription"></p>
+                <hr class="case-divider">
+                <h2>案件簡介</h2>
+                <p class="muted" id="caseInfoBackground"></p>
+                <h2>調查目標</h2>
+                <p class="muted">調查現場證據、詢問相關人物，找出真正的兇手及其犯案動機。</p>
+                <div class="muted" id="caseInfoMeta"></div>
+                <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:30px">
+                    <button class="btn" onclick="showPage('homePage')">返回案件列表</button>
+                    <button class="btn btn-primary" id="startButton" onclick="startGame()">開始調查</button>
+                </div>
+                <div id="caseInfoStatus" class="status-message"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 調查頁面 -->
+    <section id="gamePage" class="page">
+        <div class="game-heading">
+            <div>
+                <h1 style="font-size:23px;margin-bottom:5px">案件調查</h1>
+                <div class="muted" id="gameCaseTitle"></div>
+            </div>
+            <div class="question-count" id="questionCount">剩餘詢問次數：12 / 12</div>
+        </div>
+
+        <div class="game-layout">
+            <aside class="panel">
+                <h2>調查對象</h2>
+                <div class="suspect-list" id="suspectList"></div>
+            </aside>
+
+            <main class="panel chat-panel">
+                <div class="chat-title">
+                    <h2 id="suspectName"></h2>
+                    <div class="muted" id="suspectRole"></div>
+                </div>
+
+                <div id="chatMessages" class="chat-messages"></div>
+
+                <div class="muted">推薦問題</div>
+                <div id="presetArea" class="preset-area"></div>
+
+                <div class="chat-input">
+                    <input id="questionInput" placeholder="輸入想詢問的問題..."
+                           onkeydown="if(event.key==='Enter') askQuestion()">
+                    <button class="btn btn-primary" id="askButton" onclick="askQuestion()">提問</button>
+                </div>
+
+                <div class="question-count" id="chatCount">剩餘詢問次數：12</div>
+                <div id="chatStatus" class="status-message"></div>
+            </main>
+
+            <aside class="panel">
+                <h2>調查資料</h2>
+                <button class="tool-button active" onclick="showTool('evidence',this)">證據資料</button>
+                <button class="tool-button" onclick="showTool('timeline',this)">案發時間線</button>
+                <button class="tool-button" onclick="showTool('people',this)">人物關係</button>
+                <button class="tool-button" id="statementToolButton" onclick="showTool('statements',this)">匿名證詞</button>
+                <div id="toolContent" class="content-area"></div>
+            </aside>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:20px">
+            <button class="btn btn-danger" onclick="showAnswerPage()">提交兇手答案</button>
+        </div>
+    </section>
+
+    <!-- 提交答案 -->
+    <section id="answerPage" class="page">
+        <div class="home-content">
+            <div class="panel">
+                <h1>提交調查結果</h1>
+                <p class="muted">你認為誰是真正的兇手？請選擇一名調查對象作為最終答案。</p>
+                <div class="answer-list" id="answerList"></div>
+                <button class="btn btn-primary" id="submitButton" onclick="submitAnswer()">確認提交</button>
+                <button class="btn" onclick="showPage('gamePage')">返回調查</button>
+                <div id="answerStatus" class="status-message"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 結局 -->
+    <section id="endingPage" class="page">
+        <div class="home-content">
+            <div class="panel">
+                <h1 id="endingTitle">案件調查結果</h1>
+                <div id="endingResult"></div>
+                <button class="btn btn-primary" style="margin-top:25px" onclick="returnToCases()">返回案件列表</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const API_BASE = "/api";
+
+        const CASES = {
+            case01: {
+                number: "CASE 001",
+                title: "午夜書房的最後訪客",
+                description: "企業負責人於私人宅邸的書房內被發現死亡。",
+                background: "企業負責人周明遠於私人宅邸的書房內被發現死亡。警方初步判定為他殺，案發當晚宅邸內共有三位與死者關係密切的人物。調查需要釐清每個人的行蹤、動機及證據。",
+                suspects: [
+                    { id: "lin", name: "林予安", role: "26 歲｜死者女兒", opening: "你還有什麼想問的？我已經說過，當晚我沒有進入書房。", presets: ["你與死者的關係如何？", "案發當晚你在哪裡？"] },
+                    { id: "chen", name: "陳柏勳", role: "34 歲｜私人秘書", opening: "有什麼問題就直接問吧。我會配合調查。", presets: ["你與周明遠的關係如何？", "案發當晚你進入書房做什麼？"] },
+                    { id: "wang", name: "王美玲", role: "52 歲｜宅邸管家", opening: "我知道的事情都已經告訴警方了，還有什麼需要了解的嗎？", presets: ["你在案發當晚聽見了什麼？", "你最後一次見到周明遠是什麼時候？"] }
+                ],
+                evidence: [
+                    ["現場銅製鎮紙", "物品上發現血跡及擦拭痕跡，初步判定為造成死者頭部傷勢的物品。"],
+                    ["走廊監視器", "20:52 陳柏勳進入書房，21:09 離開，期間沒有其他人進入。監視器只能證明進出時間，無法直接證明他在書房內做了什麼。"],
+                    ["廚房監視器", "20:55 至 21:18，林予安持續出現在廚房畫面中，期間沒有離開。"],
+                    ["死者手機訊息", "20:45 傳送訊息給會計師：「明天早上九點，我會把完整帳目交給你，這件事不能再拖了。」"],
+                    ["公司帳目", "部分支出與實際紀錄不符，多筆異常款項與陳柏勳經手的業務有關，另有一份未寄出的調查報告草稿。"],
+                    ["王美玲的證詞", "她曾在書房附近聽見周明遠與一名男性爭吵，但沒有看清對方的臉，也沒有聽清楚完整內容。"],
+                    ["林予安的爭執", "20:20 曾因遺產安排與父親發生激烈爭執。"]
+                ],
+                timeline: [
+                    "20:20　林予安與父親因遺產安排發生爭執",
+                    "20:35　王美玲進入書房放置茶水",
+                    "20:45　周明遠傳訊息給會計師",
+                    "20:52　陳柏勳進入書房",
+                    "約 21:00　王美玲在書房附近聽到爭吵",
+                    "21:09　陳柏勳離開書房",
+                    "21:15　王美玲將茶水放在書房外",
+                    "21:30　林予安發現父親死亡"
+                ],
+                people: [
+                    "周明遠：死者，企業負責人。",
+                    "林予安：周明遠的女兒，近期因遺產問題與父親不和。",
+                    "陳柏勳：周明遠的私人秘書，負責部分公司帳務。",
+                    "王美玲：周明遠宅邸的管家，工作多年。"
+                ],
+                statements: [],
+                answers: ["林予安", "陳柏勳", "王美玲"]
+            },
+
+            case02: {
+                number: "CASE 002",
+                title: "沉默的病房",
+                description: "一名出生不久的男嬰在病房內死亡，現場留下多項可疑線索。",
+                background: "某醫療機構發生一起嬰兒死亡事件。死者是一名出生不久的男嬰，下午被發現陳屍於病房內。初步檢查發現，死者喉部存在明顯異常傷痕，體內也有藥物殘留。調查發現，案發當日曾有家長、護士、醫生及其他人員接近病房。病房內還有一張倒落的金屬桌，而隔壁病房的病人表示，中午曾聽見病房傳出爭吵聲與巨大的撞擊聲。目前尚無法確認死亡原因與實際經過，需要進一步調查相關人員及現場證據。",
+                suspects: [
+                    { id: "girl", name: "小女孩", role: "死者姐姐", opening: "你還有什麼想問的？我想陪弟弟，不想一直回答問題。", presets: ["你平常和弟弟相處得如何？", "中午你和家長進入病房後發生什麼事？", "檢查小女孩的四肢及頭部"], specialPreset: "檢查小女孩的四肢及頭部" },
+                    { id: "parent", name: "家長", role: "死者與小女孩的家長", opening: "你們不是已經問過了嗎？有什麼問題就快點問。", presets: ["中午你為什麼和小女孩進入病房？", "你離開病房時，小女孩在哪裡？", "你平常如何管教小女孩？"] },
+                    { id: "nurse", name: "護士", role: "醫療機構護理人員", opening: "我、我知道的事情都已經說過了……還有什麼需要問的嗎？", presets: ["上午你進入病房做了什麼？", "你為什麼在走廊和小女孩交談？", "下午你進入病房後發生什麼事？"] },
+                    { id: "doctor", name: "醫生", role: "負責男嬰診療的醫生", opening: "如果是關於病情的問題，我會盡可能提供專業說明。", presets: ["男嬰當天使用了什麼藥物？", "藥物殘留是否可能造成死亡？", "你能確認處方沒有問題嗎？"] },
+                    { id: "patient", name: "隔壁房病人", role: "案發當日住在隔壁病房", opening: "我只是住在隔壁，知道的事情不多。如果是我親耳聽見或親眼看見的，我可以告訴你。", presets: ["中午你聽見了什麼聲音？", "上午你有看見什麼人嗎？", "下午你有看見護士嗎？"] }
+                ],
+                evidence: [
+                    ["E01｜小女孩的日記", "日記多次提到弟弟很可愛、喜歡看弟弟睡覺與笑，也寫下希望能一直陪伴弟弟，以及對弟弟未來的擔憂。"],
+                    ["E02｜死者檢查紀錄", "男嬰喉部有明顯手指壓迫痕跡，體內有藥物殘留；身體其他部位沒有明顯硬物敲擊傷。"],
+                    ["E03｜走廊監控", "上午護士進入病房送藥，離開後與小女孩交談。中午小女孩與家長進入病房，家長先離開，小女孩稍後才離開。下午護士進入病房，很快又離開。"],
+                    ["E04｜病房現場紀錄", "病房內金屬桌倒落，桌面及部分結構有撞擊損壞。桌子倒落會發出明顯金屬撞擊聲，但無法判斷倒落時間與原因。"],
+                    ["E06｜醫療用藥紀錄", "紀錄列出男嬰當日藥物處方、使用時間與劑量。醫生開錯具鎮靜作用的處方藥，但藥物與劑量不足以造成死亡。"]
+                ],
+
+                timeline: [
+                    "上午　護士進入病房替男嬰送藥",
+                    "上午稍後　護士離開病房後，在走廊與小女孩交談一段時間",
+                    "中午　小女孩與家長一同進入男嬰病房",
+                    "中午稍後　監控顯示家長先離開病房，小女孩稍後才離開",
+                    "下午　護士進入病房，之後很快離開"
+                ],
+                people: [
+                    "男嬰：死者，出生不久，死於病房內。",
+                    "小女孩：死者的姐姐，案發當日曾與家長進入病房。",
+                    "家長：男嬰與小女孩的家長，曾在中午進入病房。",
+                    "護士：上午替男嬰送藥，下午進入病房。",
+                    "醫生：負責男嬰診療與處方。",
+                    "隔壁房病人：案發當日住在隔壁病房，曾聽見聲音並看見走廊情況。"
+                ],
+                statements: [
+                    "上午曾有人看見護士將藥物送進男嬰病房。",
+                    "護士離開病房後，曾在走廊與小女孩交談一段時間。",
+                    "中午病房內傳出爭吵聲，接著出現很大的金屬撞擊聲。",
+                    "下午曾有人看見護士快速經過病房附近。"
+                ],
+                answers: ["小女孩", "家長", "護士", "醫生", "隔壁房病人"]
+            }
+        };
+
+        // ======================================
+        // 遊戲狀態
+        // ======================================
+
+        let currentCaseId = 'case01';
+        let sessionId = null;
+        let currentSuspect = 0;
+        let remainingQuestions = 12;
+        let maxQuestions = 12;
+        let selectedAnswer = -1;
+        let isBusy = false;
+        let gameOver = false;
+
+        // 每個角色獨立保存對話
+        let conversations = {};
+
+        // ======================================
+        // API 共用函式
+        // ======================================
+
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: {}
+            };
+
+            if (body !== null) {
+                options.headers['Content-Type'] = 'application/json; charset=utf-8';
+                options.body = JSON.stringify(body);
+            }
+
+            const response = await fetch(API_BASE + endpoint, options);
+
+            let data;
+
+            try {
+                data = await response.json();
+            } catch {
+                throw new Error('伺服器回傳的資料格式不正確。');
+            }
+
+            if (!response.ok || data.success === false) {
+                throw new Error(data.error || '伺服器發生錯誤。');
+            }
+
+            return data;
+        }
+
+        // ======================================
+        // 頁面切換
+        // ======================================
+
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            document.getElementById(id).classList.add('active');
+        }
+
+        // ======================================
+        // 案件選擇
+        // ======================================
+
+        function openCase(caseId) {
+            if (!CASES[caseId]) return;
+
+            currentCaseId = caseId;
+
+            const data = CASES[caseId];
+
+            document.getElementById('caseInfoNumber').textContent = data.number;
+            document.getElementById('caseInfoTitle').textContent = data.title;
+            document.getElementById('caseInfoDescription').textContent = data.description;
+            document.getElementById('caseInfoBackground').textContent = data.background;
+
+            document.getElementById('caseInfoMeta').textContent =
+                `調查對象：${data.suspects.length} 人｜可用詢問次數：12 次`;
+
+            document.getElementById('caseInfoStatus').textContent = '';
+
+            showPage('caseInfoPage');
+        }
+
+        // ======================================
+        // 開始遊戲
+        // ======================================
+
+        async function startGame() {
+            if (isBusy) return;
+
+            isBusy = true;
+
+            const button = document.getElementById('startButton');
+            const status = document.getElementById('caseInfoStatus');
+
+            button.disabled = true;
+            status.textContent = '正在建立調查 Session...';
+
+            try {
+                const data = await apiRequest('/session', 'POST', {
+                    caseId: currentCaseId
+                });
+
+                sessionId = data.sessionId;
+                remainingQuestions = data.remainingQuestions;
+                maxQuestions = data.remainingQuestions;
+
+                gameOver = false;
+                selectedAnswer = -1;
+
+                conversations = {};
+
+                CASES[currentCaseId].suspects.forEach(suspect => {
+                    conversations[suspect.id] = [];
+                });
+
+                currentSuspect = 0;
+
+                document.getElementById('gameCaseTitle').textContent =
+                    `${CASES[currentCaseId].number} / ${CASES[currentCaseId].title}`;
+
+                renderSuspectList();
+                switchSuspect(0);
+
+                updateQuestionCount();
+
+                showTool(
+                    'evidence',
+                    document.querySelector('.tool-button')
+                );
+
+                renderAnswerList();
+
+                document.getElementById('questionInput').value = '';
+                document.getElementById('chatStatus').textContent = '';
+
+                showPage('gamePage');
+
+            } catch (error) {
+                status.textContent = error.message;
+
+            } finally {
+                isBusy = false;
+                button.disabled = false;
+            }
+        }
+
+        // ======================================
+        // 嫌疑人清單
+        // ======================================
+
+        function renderSuspectList() {
+            const area = document.getElementById('suspectList');
+            const suspects = CASES[currentCaseId].suspects;
+
+            area.innerHTML = '';
+
+            suspects.forEach((suspect, index) => {
+                const button = document.createElement('button');
+
+                button.className = 'suspect';
+                button.dataset.index = index;
+
+                const name = document.createElement('span');
+                name.textContent = suspect.name;
+
+                const role = document.createElement('small');
+                role.textContent = suspect.role;
+
+                button.appendChild(name);
+                button.appendChild(role);
+
+                button.addEventListener('click', () => {
+                    switchSuspect(index);
+                });
+
+                area.appendChild(button);
+            });
+        }
+
+        // ======================================
+        // 嫌疑人切換
+        // ======================================
+
+        function switchSuspect(index) {
+            const suspects = CASES[currentCaseId].suspects;
+
+            if (index < 0 || index >= suspects.length) return;
+
+            currentSuspect = index;
+
+            document.querySelectorAll('.suspect').forEach((button, i) => {
+                button.classList.toggle('selected', i === index);
+            });
+
+            const suspect = suspects[index];
+
+            document.getElementById('suspectName').textContent = suspect.name;
+            document.getElementById('suspectRole').textContent = suspect.role;
+
+            renderChat();
+            renderPresets();
+        }
+
+        // ======================================
+        // 對話紀錄
+        // ======================================
+
+        function renderChat() {
+            const area = document.getElementById('chatMessages');
+            const suspect = CASES[currentCaseId].suspects[currentSuspect];
+
+            area.innerHTML = '';
+
+            const history = conversations[suspect.id] || [];
+
+            if (history.length === 0) {
+                addMessage(suspect.opening, 'ai');
+                return;
+            }
+
+            history.forEach(message => {
+                addMessage(message.text, message.type);
+            });
+        }
+
+        function addMessage(text, type) {
+            const area = document.getElementById('chatMessages');
+
+            const message = document.createElement('div');
+
+            message.className = 'message ' + type;
+            message.textContent = text;
+
+            area.appendChild(message);
+            area.scrollTop = area.scrollHeight;
+        }
+
+        // ======================================
+        // 推薦問題
+        // ======================================
+
+        function renderPresets() {
+            const area = document.getElementById('presetArea');
+            const suspect = CASES[currentCaseId].suspects[currentSuspect];
+
+            area.innerHTML = '';
+
+            suspect.presets.forEach(question => {
+                const button = document.createElement('button');
+
+                button.className = 'btn';
+                button.textContent = question;
+
+                button.addEventListener('click', () => {
+                    askPreset(question);
+                });
+
+                area.appendChild(button);
+            });
+        }
+
+        // 推薦問題只填入輸入框，不會直接送出。
+        function askPreset(question) {
+            const input = document.getElementById('questionInput');
+
+            input.value = question;
+            input.focus();
+        }
+
+        // ======================================
+        // 提問功能
+        // ======================================
+
+        async function askQuestion() {
+            if (isBusy || gameOver) return;
+
+            if (!sessionId) {
+                alert('目前沒有有效的遊戲 Session，請重新開始遊戲。');
+                return;
+            }
+
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+
+            if (!question) return;
+
+            if (remainingQuestions <= 0) {
+                alert('詢問次數已用完，仍可查看證據及提交答案。');
+                return;
+            }
+
+            const suspect = CASES[currentCaseId].suspects[currentSuspect];
+
+            const button = document.getElementById('askButton');
+            const status = document.getElementById('chatStatus');
+
+            isBusy = true;
+
+            button.disabled = true;
+            input.disabled = true;
+
+            status.textContent = '正在等待角色回答...';
+
+            try {
+                const data = await apiRequest('/chat', 'POST', {
+                    sessionId,
+                    suspect: suspect.id,
+                    message: question
+                });
+
+                // 只有成功取得回答才更新對話。
+                conversations[suspect.id].push({
+                    text: question,
+                    type: 'player'
+                });
+
+                conversations[suspect.id].push({
+                    text: data.answer,
+                    type: 'ai'
+                });
+
+                remainingQuestions = data.remainingQuestions;
+
+                input.value = '';
+
+                renderChat();
+                updateQuestionCount();
+
+                status.textContent = '';
+
+            } catch (error) {
+                status.textContent = error.message;
+
+            } finally {
+                isBusy = false;
+
+                button.disabled = false;
+                input.disabled = false;
+
+                input.focus();
+            }
+        }
+
+        // ======================================
+        // 詢問次數
+        // ======================================
+
+        function updateQuestionCount() {
+            document.getElementById('questionCount').textContent =
+                `剩餘詢問次數：${remainingQuestions} / ${maxQuestions}`;
+
+            document.getElementById('chatCount').textContent =
+                `剩餘詢問次數：${remainingQuestions}`;
+        }
+
+        // ======================================
+        // 調查資料
+        // ======================================
+
+        function showTool(type, button) {
+            document.querySelectorAll('.tool-button').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            if (button) {
+                button.classList.add('active');
+            }
+
+            const content = document.getElementById('toolContent');
+
+            content.innerHTML = '';
+
+            const caseData = CASES[currentCaseId];
+
+            if (type === 'evidence') {
+                renderEvidence(content, caseData);
+
+            } else if (type === 'timeline') {
+                renderTimeline(content, caseData);
+
+            } else if (type === 'people') {
+                renderPeople(content, caseData);
+
+            } else if (type === 'statements') {
+                renderStatements(content, caseData);
+            }
+        }
+
+        // ======================================
+        // 證據
+        // ======================================
+
+        function renderEvidence(content, caseData) {
+            caseData.evidence.forEach((evidence, index) => {
+                const item = document.createElement('div');
+
+                item.className = 'evidence-item';
+
+                const title = document.createElement('strong');
+                title.textContent = evidence[0];
+
+                const description = document.createElement('p');
+                description.textContent = evidence[1];
+
+                item.appendChild(title);
+                item.appendChild(description);
+
+                content.appendChild(item);
+            });
+
+            // CASE02 小女孩身體檢查：
+            // 只在小女孩角色的推薦問題中出現，不作為獨立證據。
+        }
+
+        // ======================================
+        // 時間線
+        // ======================================
+
+        function renderTimeline(content, caseData) {
+            caseData.timeline.forEach(event => {
+                const item = document.createElement('div');
+
+                item.className = 'evidence-item';
+                item.textContent = event;
+
+                content.appendChild(item);
+            });
+        }
+
+        // ======================================
+        // 人物關係
+        // ======================================
+
+        function renderPeople(content, caseData) {
+            caseData.people.forEach(person => {
+                const item = document.createElement('div');
+
+                item.className = 'evidence-item';
+                item.textContent = person;
+
+                content.appendChild(item);
+            });
+        }
+
+        // ======================================
+        // 匿名證詞
+        // ======================================
+
+        function renderStatements(content, caseData) {
+            if (!caseData.statements || caseData.statements.length === 0) {
+                const empty = document.createElement('p');
+
+                empty.className = 'muted';
+                empty.textContent = '目前沒有其他匿名證詞。';
+
+                content.appendChild(empty);
+                return;
+            }
+
+            caseData.statements.forEach(statement => {
+                const item = document.createElement('div');
+
+                item.className = 'statement';
+                item.textContent = statement;
+
+                content.appendChild(item);
+            });
+        }
+
+        // ======================================
+        // 最終指認
+        // ======================================
+
+        function renderAnswerList() {
+            const area = document.getElementById('answerList');
+
+            area.innerHTML = '';
+            selectedAnswer = -1;
+
+            const suspects = CASES[currentCaseId].suspects;
+
+            suspects.forEach((suspect, index) => {
+                const button = document.createElement('button');
+
+                button.className = 'answer-option';
+                button.textContent = suspect.name;
+
+                button.addEventListener('click', () => {
+                    selectedAnswer = index;
+
+                    document.querySelectorAll('.answer-option').forEach((item, i) => {
+                        item.classList.toggle('selected', i === index);
+                    });
+                });
+
+                area.appendChild(button);
+            });
+        }
+
+        function showAnswerPage() {
+            if (gameOver) return;
+
+            if (!sessionId) {
+                alert('請先開始調查。');
+                return;
+            }
+
+            renderAnswerList();
+
+            document.getElementById('answerStatus').textContent = '';
+
+            showPage('answerPage');
+        }
+
+        // ======================================
+        // 提交答案
+        // ======================================
+
+        async function submitAnswer() {
+            if (isBusy || gameOver) return;
+
+            if (selectedAnswer < 0) {
+                document.getElementById('answerStatus').textContent =
+                    '請先選擇一名調查對象。';
+                return;
+            }
+
+            const suspects = CASES[currentCaseId].suspects;
+            const selected = suspects[selectedAnswer];
+
+            const button = document.getElementById('submitButton');
+            const status = document.getElementById('answerStatus');
+
+            isBusy = true;
+            button.disabled = true;
+
+            status.textContent = '正在確認調查結果...';
+
+            try {
+                const data = await apiRequest('/answer', 'POST', {
+                    sessionId,
+                    answer: selected.id
+                });
+
+                gameOver = true;
+
+                showEnding(data);
+
+            } catch (error) {
+                status.textContent = error.message;
+
+            } finally {
+                isBusy = false;
+                button.disabled = false;
+            }
+        }
+
+        // ======================================
+        // 結局顯示
+        // ======================================
+
+        function showEnding(data) {
+            const title = document.getElementById('endingTitle');
+            const result = document.getElementById('endingResult');
+
+            title.textContent = data.ending || '案件調查結果';
+
+            result.innerHTML = '';
+
+            const message = document.createElement('p');
+            message.textContent = data.message || '';
+            result.appendChild(message);
+
+            if (data.isCorrect) {
+                const truth = data.truth;
+
+                if (truth) {
+                    const section = document.createElement('div');
+                    section.className = 'truth-section';
+
+                    const heading = document.createElement('h3');
+                    heading.textContent = '案件完整真相';
+
+                    section.appendChild(heading);
+
+                    addTruthSection(section, '真正的兇手', truth.culprit);
+                    addTruthSection(section, '案件經過', truth.summary);
+                    addTruthSection(section, '犯案動機', truth.motive);
+                    addTruthSection(section, '犯案方式', truth.method);
+
+                    result.appendChild(section);
+
+                    if (truth.timeline) {
+                        const timelineSection = document.createElement('div');
+                        timelineSection.className = 'truth-section';
+
+                        const timelineTitle = document.createElement('h3');
+                        timelineTitle.textContent = '完整時間線';
+
+                        timelineSection.appendChild(timelineTitle);
+
+                        truth.timeline.forEach(event => {
+                            const p = document.createElement('p');
+                            p.textContent = `${event.time}｜${event.event}`;
+                            timelineSection.appendChild(p);
+                        });
+
+                        result.appendChild(timelineSection);
+                    }
+
+                    if (truth.suspects) {
+                        const suspectSection = document.createElement('div');
+                        suspectSection.className = 'truth-section';
+
+                        const suspectTitle = document.createElement('h3');
+                        suspectTitle.textContent = '其他調查對象';
+
+                        suspectSection.appendChild(suspectTitle);
+
+                        truth.suspects.forEach(person => {
+                            const p = document.createElement('p');
+                            p.textContent =
+                                `${person.name}：${person.result}。${person.explanation}`;
+
+                            suspectSection.appendChild(p);
+                        });
+
+                        result.appendChild(suspectSection);
+                    }
+
+                }
+            } else if (data.truth === null) {
+                // CASE02 錯誤指認：不顯示完整真相。
+                const note = document.createElement('p');
+
+                note.className = 'muted';
+                note.textContent = '由於你的指認不正確，真正的犯案者仍未被揭露。';
+
+                result.appendChild(note);
+            } else if (data.truth) {
+                // CASE01 維持原本錯誤指認仍顯示真相的行為。
+                const truth = data.truth;
+
+                const section = document.createElement('div');
+                section.className = 'truth-section';
+
+                const heading = document.createElement('h3');
+                heading.textContent = '案件完整真相';
+
+                section.appendChild(heading);
+
+                addTruthSection(section, '真正的兇手', truth.culprit);
+                addTruthSection(section, '案件經過', truth.summary);
+                addTruthSection(section, '犯案動機', truth.motive);
+                addTruthSection(section, '犯案方式', truth.method);
+
+                result.appendChild(section);
+            }
+
+            showPage('endingPage');
+        }
+
+        function addTruthSection(container, headingText, bodyText) {
+            if (!bodyText) return;
+
+            const heading = document.createElement('h3');
+            heading.textContent = headingText;
+
+            const paragraph = document.createElement('p');
+            paragraph.textContent = bodyText;
+
+            container.appendChild(heading);
+            container.appendChild(paragraph);
+        }
+
+        // ======================================
+        // 返回案件列表
+        // ======================================
+
+        function returnToCases() {
+            sessionId = null;
+            currentSuspect = 0;
+            remainingQuestions = 12;
+            maxQuestions = 12;
+            selectedAnswer = -1;
+            gameOver = false;
+            isBusy = false;
+
+            conversations = {};
+
+            document.getElementById('questionInput').value = '';
+            document.getElementById('chatStatus').textContent = '';
+
+            showPage('homePage');
+        }
+    </script>
+</body>
+</html>
